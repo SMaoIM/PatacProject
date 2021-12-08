@@ -24,8 +24,8 @@ int main(int argc, char* argv[])
 
 	sockaddr_in sin;
 	sin.sin_family = AF_INET;
-	sin.sin_port = htons(8888);
-	sin.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+	sin.sin_port = htons(8889);
+	sin.sin_addr.S_un.S_addr = inet_addr("127.0.0.2");
 	int len = sizeof(sin);
 	while(1)
 	{

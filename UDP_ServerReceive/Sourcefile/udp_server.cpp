@@ -6,6 +6,8 @@
 #pragma warning(disable:4996)
 #include "vtd_def.h"
 
+RDB_DRIVER_CTRL_t driver_ctrl;
+
 int main(int argc, char* argv[])
 {
 	unsigned int  bytesInBuffer = 0;
@@ -19,18 +21,30 @@ int main(int argc, char* argv[])
 	{
 		return 0;
 	}
-
+	//server receive, 127.0.0.1:8888
 	SOCKET serSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	//client send, 127.0.0.2:8889 
+	SOCKET sclient = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
 	if (serSocket == INVALID_SOCKET)
 	{
 		printf("socket error !");
 		return 0;
 	}
 
+	//server
 	sockaddr_in serAddr;
 	serAddr.sin_family = AF_INET;
 	serAddr.sin_port = htons(8888);
 	serAddr.sin_addr.S_un.S_addr = INADDR_ANY;
+	
+	//client
+	sockaddr_in sin;
+	sin.sin_family = AF_INET;
+	sin.sin_port = htons(8889);
+	sin.sin_addr.S_un.S_addr = inet_addr("127.0.0.2");
+	int len = sizeof(sin);
+
 	if (bind(serSocket, (sockaddr *)&serAddr, sizeof(serAddr)) == SOCKET_ERROR)
 	{
 		printf("bind error !");
@@ -40,12 +54,14 @@ int main(int argc, char* argv[])
 
 	sockaddr_in remoteAddr;
 	int nAddrLen = sizeof(remoteAddr);
+	printf("start connecting\n");
 	while (true)
 	{
 		char recvData[255];
+		printf("receriving**************************\n");
 		int ret = recvfrom(serSocket, recvData, 255, 0, (sockaddr*)&remoteAddr, &nAddrLen);
 
-		printf("ret is %d\n",ret);
+		//printf("ret is %d\n",ret);
 		if (ret > 0)
 		{
 			// do we have to grow the buffer??
@@ -53,17 +69,21 @@ int main(int argc, char* argv[])
 			{
 				pData = (unsigned char*)realloc(pData, bytesInBuffer + ret);
 				bufferSize = bytesInBuffer + ret;
-				printf("********************************************************************\n");
+				//printf("********************************************************************\n");
 			}
 
 			memmove(pData , recvData, ret);
 			bytesInBuffer += ret;
-			printf("bytesInBuffer is %d\n", bytesInBuffer);
+			//printf("bytesInBuffer is %d\n", bytesInBuffer);
 			// already complete messagae?
 			if (bytesInBuffer >= sizeof(RDB_DRIVER_CTRL_t))
 			{
 				RDB_DRIVER_CTRL_t* hdr = (RDB_DRIVER_CTRL_t*)pData;
 				printf("playerID is: %lu,\tsteeringWheel is %f,\tvalidityFlags is %lu\t",hdr->playerId,hdr->steeringWheel,hdr->validityFlags);
+				driver_ctrl.playerId = hdr->playerId + 2;
+				driver_ctrl.steeringWheel = hdr->steeringWheel + 1;
+				driver_ctrl.validityFlags = hdr->validityFlags;
+
 			}
 				/*
 				// is this message containing the valid magic number?
@@ -77,6 +97,13 @@ int main(int argc, char* argv[])
 			//recvData[ret] = 0x00;
 			printf("接受到一个连接：%s \r\n", inet_ntoa(remoteAddr.sin_addr));
 			bytesInBuffer = 0;
+
+			const char * sendData = (char *)&driver_ctrl;
+			printf("send data is:\n %u,\t%f,\t,%u\n", driver_ctrl.playerId, driver_ctrl.steeringWheel, driver_ctrl.validityFlags);
+			sendto(sclient, sendData, bufferSize, 0, (sockaddr *)&sin, len);
+
+
+
 			//printf(recvData);
 		}
 		/*

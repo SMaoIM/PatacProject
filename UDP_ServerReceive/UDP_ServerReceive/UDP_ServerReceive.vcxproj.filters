@@ -23,5 +23,8 @@
     <ClInclude Include="..\Headfile\vtd_def.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Headfile\viRDBLCD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
