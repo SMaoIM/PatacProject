@@ -1650,7 +1650,13 @@ typedef struct
     uint8_t        cloudState;    /**< cloud state                                                             @unit @link RDB_ENV_CLOUD_STATE @endlink @version 0x0100 */
     uint16_t       flags;         /**< a series of environment flags                                           @unit @link RDB_ENV_FLAG        @endlink @version 0x0100 */
     float          temperature;   /**< ambient temperature                                                     @unit [deg]                              @version 0x0119 */
-    uint32_t       spare1[7];     /**< yet another spare                                                       @unit _                                  @version 0x0100 */
+    uint8_t        day;                   
+    uint8_t        month;                 
+    uint16_t       year;                  
+    int16_t        timeZoneMinutesWest;   
+    uint16_t       spare2; 
+    float          frictionScale;  
+    uint32_t       spare1[4];     /**< yet another spare                                                       @unit _                                  @version 0x0100 */
 } RDB_ENVIRONMENT_t;
 
 /** ------ pedestrians animation data ------
